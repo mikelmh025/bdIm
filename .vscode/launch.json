@@ -1,0 +1,75 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Train: CycleIm",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "args": [
+                "--phase=train_cycleim",
+                "--batch_size=4",
+                "--learning_rate=0.01",
+                "--total_steps=30000",
+                "--prev_freq=100",
+                "--save_freq=500",
+                "--path_to_dataset=../faceNN_data/trainset_female/",
+                "--path_to_testset=../faceNN_data/testset_female/"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Eval: Inverter",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "args": [
+                "--phase=eval_inverter",
+                "--batch_size=1",
+                "--learning_rate=0.01",
+                "--total_steps=30000",
+                "--prev_freq=100",
+                "--save_freq=500",
+                "--path_to_dataset=../faceNN_data/trainset_female/",
+                "--path_to_testset=../faceNN_data/testset_female/"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Train: Inverter",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "args": [
+                "--phase=train_inverter",
+                "--batch_size=4",
+                "--learning_rate=0.01",
+                "--total_steps=30000",
+                "--prev_freq=100",
+                "--save_freq=500",
+                "--path_to_dataset=../faceNN_data/trainset_female/",
+                "--path_to_testset=../faceNN_data/testset_female/"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: Main",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "args": [
+                "--phase=train_imitator",
+                "--batch_size=4",
+                "--learning_rate=0.01",
+                "--total_steps=30000",
+                "--prev_freq=100",
+                "--save_freq=500",
+                "--path_to_dataset=../faceNN_data/trainset_female/"
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}
