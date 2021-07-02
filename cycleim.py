@@ -106,27 +106,29 @@ class CycleIm(nn.Module):
         :param reference: reference photo [batch, 3, 512, 512]
         :return loss: [batch], y_: generated picture
         """
-
-        # Training inverter
-        self.optimizer_inverter.zero_grad()
         params_fake = self.forward_inverter(reference) # CycleIm use image as input
         reference_recon = self.forward_imitator(params_fake)  # Reconstruct
-
-        loss_l1 = F.l1_loss(params, params_fake)              # Compare to the Ground truth label
-        loss_recon = F.l1_loss(reference, reference_recon)    # Reconsstruction loss
-        loss_inverter = 0.5 * loss_l1 + 0.5 * loss_recon
-        loss_inverter.backward()  # 求导  loss: [1] scalar
-        self.optimizer_inverter.step()  # update inverter
-
-        # Training imitator
-        self.optimizer_imitator.zero_grad()
         reference_fake = self.forward_imitator(params)
         params_recon = self.forward_inverter(reference_fake)
 
+        self.optimizer_inverter.zero_grad()        # Training inverter
+        self.optimizer_imitator.zero_grad()        # Training imitator
+
+
+        # Inverter
+        loss_l1 = F.l1_loss(params, params_fake)              # Compare to the Ground truth label
+        loss_recon = F.l1_loss(reference, reference_recon)    # Reconsstruction loss
+        loss_inverter = 0.5 * loss_l1 + 0.5 * loss_recon
+
+
+        # Imitator
         loss_l1 = F.l1_loss(reference, reference_fake)   # Compare to the Ground truth image
         loss_recon = F.l1_loss(params,params_recon)       # Reconsstruction loss
         loss_imitator = 0.5 * loss_l1 + 0.5 * loss_recon
+
+        loss_inverter.backward()  # 求导  loss: [1] scalar
         loss_imitator.backward()  # 求导  loss: [1] scalar
+        self.optimizer_inverter.step()  # update inverter
         self.optimizer_imitator.step()  # update imitator
 
         return loss_inverter, loss_imitator, params_fake, reference_fake, reference_recon
