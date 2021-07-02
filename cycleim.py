@@ -118,13 +118,13 @@ class CycleIm(nn.Module):
         # Inverter
         loss_l1 = F.l1_loss(params, params_fake)              # Compare to the Ground truth label
         loss_recon = F.l1_loss(reference, reference_recon)    # Reconsstruction loss
-        loss_inverter = 0.5 * loss_l1 + 0.5 * loss_recon
+        loss_inverter = 0.9 * loss_l1 + 0.1 * loss_recon
 
 
         # Imitator
         loss_l1 = F.l1_loss(reference, reference_fake)   # Compare to the Ground truth image
         loss_recon = F.l1_loss(params,params_recon)       # Reconsstruction loss
-        loss_imitator = 0.5 * loss_l1 + 0.5 * loss_recon
+        loss_imitator = 0.9 * loss_l1 + 0.1 * loss_recon
 
         loss_inverter.backward()  # 求导  loss: [1] scalar
         loss_imitator.backward()  # 求导  loss: [1] scalar
