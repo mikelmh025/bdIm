@@ -5,6 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Eval imitator, one image",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "args": ["--phase=evaluate",
+            "--total_eval_steps=1000",
+            "--imitator_model=model_imitator_400000_compete_cuda.pth",
+            "--eval_image=../faceNN_data/testset_female/db_00091_4.jpg",
+            "--params_cnt=99"
+        ],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Train: CycleIm",
             "type": "python",
             "request": "launch",
@@ -56,7 +69,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: Main",
+            "name": "Train: Imitator",
             "type": "python",
             "request": "launch",
             "program": "main.py",

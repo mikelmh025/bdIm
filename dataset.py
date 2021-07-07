@@ -79,7 +79,7 @@ class FaceDataset:
         names = []
         cnt = self.cnt
         param_cnt = self.args.params_cnt
-        size = 64 if edge else 512
+        size = 64 if edge else 256
         deep = 1 if edge else 3
         np_params = np.zeros((batch_size, param_cnt), dtype=np.float32)
         np_images = np.zeros((batch_size, deep, size, size), dtype=np.float32)
@@ -95,6 +95,7 @@ class FaceDataset:
             else:
                 path = os.path.join(self.path, name)
             image = cv2.imread(path, read_mode)
+            image = cv2.resize(image,(256,256))
             if not edge:
                 np_images[i] = np.swapaxes(image, 0, 2) / 255.  # [C, W, H]
             else:

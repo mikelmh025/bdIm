@@ -1,2 +1,5 @@
 dat/*
 output/*
+.vscode
+__pycache__/*
+logs

@@ -27,7 +27,7 @@ parser.add_argument(
     dest='params_cnt',
     type=int,
     default=int(99),
-    help='count of engine face params')
+    help='count of engine face params, default as 99')
 parser.add_argument(
     '--path_to_dataset',
     dest='path_to_dataset',

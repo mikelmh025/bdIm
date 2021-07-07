@@ -34,7 +34,7 @@ class Evaluate:
         self.learning_rate = arguments.eval_learning_rate
         self.losses = []
         self.prev_path = "./output/eval"
-        self.model_path = "../unity/models"
+        self.model_path = "unity_models"#"../unity/models"
         self.clean()
         self.imitator = Imitator("neural imitator", arguments, clean=False)
         self.l2_c = (torch.ones((512, 512)), torch.ones((512, 512)))
