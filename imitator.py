@@ -57,18 +57,6 @@ class Imitator(nn.Module):
             nn.ConvTranspose2d(64, 3, kernel_size=4, stride=2, padding=1),  # 8. (batch, 3, 512, 512)
             nn.Sigmoid(),
         )
-        # # 256 256 output
-        # self.model = nn.Sequential(
-        #     utils.deconv_layer(args.params_cnt, 512, kernel_size=4),  # 1. (batch, 512, 4, 4)
-        #     utils.deconv_layer(512, 512, kernel_size=4, stride=2, pad=1),  # 2. (batch, 512, 8, 8)
-        #     utils.deconv_layer(512, 512, kernel_size=4, stride=2, pad=1),  # 3. (batch, 512, 16, 16)
-        #     utils.deconv_layer(512, 256, kernel_size=4, stride=2, pad=1),  # 4. (batch, 256, 32, 32)
-        #     utils.deconv_layer(256, 128, kernel_size=4, stride=2, pad=1),  # 5. (batch, 128, 64, 64)
-        #     utils.deconv_layer(128, 64, kernel_size=4, stride=2, pad=1),  # 6. (batch, 64, 128, 128)
-        #     utils.deconv_layer(64, 64, kernel_size=4, stride=2, pad=1),  # 7. (batch, 3, 256, 256)
-        #     nn.ConvTranspose2d(64, 3, kernel_size=3, stride=1, padding=1),  # 8. (batch, 3, 512, 512)
-        #     nn.Sigmoid(),
-        # )
         self.model.apply(utils.init_weights)
         self.optimizer = optim.Adam(self.model.parameters(), lr=args.learning_rate)
         self.pereptual_lossNet = VGGPerceptualLoss()

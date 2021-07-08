@@ -19,6 +19,7 @@ from tqdm import tqdm
 from dataset import FaceDataset
 from util.exception import NeuralException
 from tensorboardX import SummaryWriter
+from vggPerceptualLoss import VGGPerceptualLoss
 
 """
 CycleIm
@@ -78,6 +79,7 @@ class CycleIm(nn.Module):
         self.model_inverter.apply(utils.init_weights)
         self.optimizer_inverter = optim.Adam(self.model_inverter.parameters(), lr=args.learning_rate)
         self.l2_c = (torch.ones((512, 512)), torch.ones((512, 512)))
+        self.pereptual_lossNet = VGGPerceptualLoss()
 
     def forward_inverter(self, params):
         """
@@ -106,24 +108,24 @@ class CycleIm(nn.Module):
         :param reference: reference photo [batch, 3, 512, 512]
         :return loss: [batch], y_: generated picture
         """
-        params_fake = self.forward_inverter(reference) # CycleIm use image as input
+        params_fake = self.forward_inverter(reference).squeeze() # CycleIm use image as input
         reference_recon = self.forward_imitator(params_fake)  # Reconstruct
         reference_fake = self.forward_imitator(params)
-        params_recon = self.forward_inverter(reference_fake)
+        params_recon = self.forward_inverter(reference_fake).squeeze()
 
         self.optimizer_inverter.zero_grad()        # Training inverter
         self.optimizer_imitator.zero_grad()        # Training imitator
 
 
-        # Inverter
-        loss_l1 = F.l1_loss(params, params_fake)              # Compare to the Ground truth label
-        loss_recon = F.l1_loss(reference, reference_recon)    # Reconsstruction loss
+        # Inverter Past F.l1_loss
+        loss_l1 = self.pereptual_lossNet(params, params_fake)              # Compare to the Ground truth label
+        loss_recon = self.pereptual_lossNet(reference, reference_recon)    # Reconsstruction loss
         loss_inverter = 0.9 * loss_l1 + 0.1 * loss_recon
 
 
         # Imitator
-        loss_l1 = F.l1_loss(reference, reference_fake)   # Compare to the Ground truth image
-        loss_recon = F.l1_loss(params,params_recon)       # Reconsstruction loss
+        loss_l1 = self.pereptual_lossNet(reference, reference_fake)   # Compare to the Ground truth image
+        loss_recon = self.pereptual_lossNet(params,params_recon)       # Reconsstruction loss
         loss_imitator = 0.9 * loss_l1 + 0.1 * loss_recon
 
         loss_inverter.backward()  # 求导  loss: [1] scalar
