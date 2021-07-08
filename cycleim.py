@@ -41,9 +41,9 @@ class CycleIm(nn.Module):
         self.name = name
         self.args = args
         self.initial_step = 0
-        self.prev_path = "./output/CycleIm_preview"
-        self.model_path = "./output/CycleIm"
-        self.eval_path = "./output/CycleIm_eval"
+        self.prev_path = "./output/CycleIm_preview_pl1"
+        self.model_path = "./output/CycleIm_pl1"
+        self.eval_path = "./output/CycleIm_eval_pl1"
         if clean:
             self.clean()
         self.writer = SummaryWriter(comment='CycleIm', log_dir=args.path_tensor_log)
@@ -119,15 +119,17 @@ class CycleIm(nn.Module):
 
 
         # Inverter Past F.l1_loss
-        loss_l1 = self.pereptual_lossNet(params, params_fake)              # Compare to the Ground truth label
-        loss_recon = self.pereptual_lossNet(reference, reference_recon)    # Reconsstruction loss
-        loss_inverter = 0.9 * loss_l1 + 0.1 * loss_recon
+        loss_l1_self = F.l1_loss(params, params_fake)              # Compare to the Ground truth label
+        loss_p_self  = self.pereptual_lossNet(params, params_fake)
+        loss_recon = F.l1_loss(reference, reference_recon)    # Reconsstruction loss
+        loss_inverter = 0.9 * (loss_l1_self+loss_p_self*0.1) + 0.1 * loss_recon
 
 
         # Imitator
-        loss_l1 = self.pereptual_lossNet(reference, reference_fake)   # Compare to the Ground truth image
-        loss_recon = self.pereptual_lossNet(params,params_recon)       # Reconsstruction loss
-        loss_imitator = 0.9 * loss_l1 + 0.1 * loss_recon
+        loss_l1_self = F.l1_loss(reference, reference_fake)   # Compare to the Ground truth image
+        loss_p_self  = self.pereptual_lossNet(reference, reference_fake)
+        loss_recon = F.l1_loss(params,params_recon)       # Reconsstruction loss
+        loss_imitator = 0.9 * (loss_l1_self+loss_p_self*0.1) + 0.1 * loss_recon
 
         loss_inverter.backward()  # 求导  loss: [1] scalar
         loss_imitator.backward()  # 求导  loss: [1] scalar
