@@ -11,7 +11,7 @@
             "program": "main.py",
             "args": ["--phase=evaluate",
             "--total_eval_steps=1000",
-            "--imitator_model=imitator_500_cuda.pth",
+            "--imitator_model=imitator_30000_cuda.pth",
             "--eval_image=../faceNN_data/testset_female/db_00091_4.jpg",
             "--params_cnt=99"
         ],

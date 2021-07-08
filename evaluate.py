@@ -11,6 +11,7 @@ from export import write_layer
 from faceparsing.evaluate import *
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
+from vggPerceptualLoss import VGGPerceptualLoss
 
 """
 面部相似性度量
@@ -38,10 +39,14 @@ class Evaluate:
         self.clean()
         self.imitator = Imitator("neural imitator", arguments, clean=False)
         self.l2_c = (torch.ones((512, 512)), torch.ones((512, 512)))
+        self.pereptual_lossNet = VGGPerceptualLoss()
         if cuda:
             self.imitator.cuda()
+            self.pereptual_lossNet.cuda()
         self.imitator.eval()
         self.imitator.load_checkpoint(arguments.imitator_model, False, cuda=cuda)
+       
+
 
     def _init_l1_l2(self, y):
         """
@@ -88,6 +93,16 @@ class Evaluate:
         part2, _ = faceparsing_tensor(y_, self.parsing, w_g, cuda=self.cuda)
         self.l2_c = (part1 * 10, part2 * 10)
         return F.l1_loss(part1, part2)
+    
+    def discrim_perceptual(self, y_):
+        """
+        perceptual loss 
+        :param y_: generated image, torch tensor [B, C, W, H]
+        :return: perceptual loss
+        """
+        y_ = F.max_pool2d(y_, kernel_size=(4, 4), stride=4)  # 512->128
+        y_ = torch.mean(y_, dim=1).view(1, 1, 128, 128)  # gray
+        return self.pereptual_lossNet(self.l1_y,y_)
 
     def evaluate_ls(self, y_):
         """
@@ -99,8 +114,10 @@ class Evaluate:
         """
         l1 = self.discrim_l1(y_)
         l2 = self.discrim_l2(y_)
+        loss_perceptual = self.discrim_perceptual(y_)
+        
         alpha = self.args.eval_alpha
-        ls = alpha * (1 - l1) + l2
+        ls = loss_perceptual #alpha * (1 - l1) + l2 + loss_perceptual *0.1
         info = "l1:{0:.3f} l2:{1:.3f} ls:{2:.3f}".format(l1, l2, ls)
         self.losses.append((l1.item(), l2.item() / 3, ls.item()))
         return ls, info

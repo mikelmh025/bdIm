@@ -93,9 +93,9 @@ class Imitator(nn.Module):
         """
         self.optimizer.zero_grad()
         y_ = self.forward(params)
-        loss_l1 = F.l1_loss(reference, y_)
+        # loss_l1 = F.l1_loss(reference, y_)
         loss_perceptual = self.pereptual_lossNet(reference,y_)
-        loss = loss_l1 + 0.1*loss_perceptual
+        loss =  0.1*loss_perceptual # loss_l1
         loss.backward()  # 求导  loss: [1] scalar
         self.optimizer.step()  # 更新网络参数权重
         return loss, y_
