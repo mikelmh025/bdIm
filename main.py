@@ -61,7 +61,7 @@ if __name__ == '__main__':
             inverter.cuda()
         inverter.batch_train(cuda)
     elif args.phase == "eval_inverter":
-        log.info('inverter train mode')
+        log.info('inverter eval mode')
         inverter = Inverter("neural inverter", args)
         if cuda:
             inverter.cuda()
@@ -73,7 +73,12 @@ if __name__ == '__main__':
             cycleim.cuda()
         cycleim.batch_train(cuda)
 
-
+    elif args.phase == "eval_cycleim":
+        log.info('cycleim eval mode')
+        cycleim = CycleIm("neural cycleim", args)
+        if cuda:
+            cycleim.cuda()
+        cycleim.evaluate_model(cuda)
 
 
 

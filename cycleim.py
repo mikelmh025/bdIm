@@ -43,6 +43,7 @@ class CycleIm(nn.Module):
         self.initial_step = 0
         self.prev_path = "./output/CycleIm_preview"
         self.model_path = "./output/CycleIm"
+        self.eval_path = "./output/CycleIm_eval"
         if clean:
             self.clean()
         self.writer = SummaryWriter(comment='CycleIm', log_dir=args.path_tensor_log)
@@ -242,29 +243,19 @@ class CycleIm(nn.Module):
 
     def evaluate_model(self, cuda=False):
         # path_ = self.model_path + "/" + "imitator_30000_cuda.pth"
-        """
-        Imitator Load
-        """
-        path_ = "./output/imitator_base" + "/" + "imitator_30000_cuda.pth"
-        if not os.path.exists(path_):
-            raise NeuralException("not exist checkpoint of imitator with path " + path_)
-        if cuda:
-            checkpoint = torch.load(path_)
-        else:
-            checkpoint = torch.load(path_, map_location='cpu')
-        self.model_imitator.load_state_dict(checkpoint['net'])
+
         """
         CycleIm Load
         """
-        path_ = "./output/CycleIm_base" + "/" + "imitator_30000_cuda.pth"
+        path_ = "./output/inference/" + self.args.imitator_model
         if not os.path.exists(path_):
             raise NeuralException("not exist checkpoint of imitator with path " + path_)
         if cuda:
             checkpoint = torch.load(path_)
         else:
             checkpoint = torch.load(path_, map_location='cpu')
-        self.model_inverter.load_state_dict(checkpoint['net'])
-
+        self.model_inverter.load_state_dict(checkpoint['model_inverter'])
+        self.model_imitator.load_state_dict(checkpoint['model_imitator'])
 
         """
         Start eval
@@ -273,7 +264,7 @@ class CycleIm(nn.Module):
         self.model_inverter.eval()
         self.model_imitator.eval()
         dataset = FaceDataset(self.args, mode="test")
-        for i in range(self.args.eval_CycleIm):
+        for i in range(self.args.eval_cycleIm):
             names, params, images = dataset.get_batch(batch_size=self.args.batch_size, edge=False)
             if cuda:
                 params = params.cuda()
@@ -290,7 +281,7 @@ class CycleIm(nn.Module):
             batch = params.size(0)
             length = params.size(1)
             _params = params.reshape((batch, length, 1, 1))
-            imitator_image = self.model_imitator.forward_inverter(_params)
+            imitator_image = self.model_imitator.forward(_params)
 
             self.output(fake_image,images,imitator_image,sample_id=i) 
             if fake_buffer == None:
@@ -317,7 +308,7 @@ class CycleIm(nn.Module):
         f_im1 = ops.fill_gray(np_im1) 
 
         image_ = ops.merge_4image(images, fake_image, imitator_image, f_im1, transpose=False)
-        path = os.path.join(self.prev_path, "eval_{0}.jpg".format(sample_id))
+        path = os.path.join(self.eval_path, "eval_{0}.jpg".format(sample_id))
         cv2.imwrite(path, image_)
 
     def tensor2image (self, tensorImage):
@@ -341,21 +332,25 @@ class CycleIm(nn.Module):
         """
         清空前记得手动备份
         """
-        ops.clear_files(self.args.path_tensor_log)
-        ops.clear_files(self.prev_path)
-        ops.clear_files(self.model_path)
+        if self.args.phase == "eval_cycleim":
+            ops.clear_files(self.eval_path)
+        else:
+            ops.clear_files(self.args.path_tensor_log)
+            ops.clear_files(self.prev_path)
+            ops.clear_files(self.model_path)
+        
 
     def save(self, step):
         """
        save checkpoint
        :param step: train step
        """
-        state = {'net': self.model_inverter.state_dict(), 'optimizer_inverter': self.optimizer_inverter.state_dict(), 
-                'optimizer_imitator':self.optimizer_imitator,'epoch': step}
+        state = {'model_inverter': self.model_inverter.state_dict(), 'model_imitator': self.model_imitator.state_dict(),
+                'optimizer_inverter': self.optimizer_inverter.state_dict(), 'optimizer_imitator':self.optimizer_imitator,'epoch': step}
         if not os.path.exists(self.model_path):
             os.mkdir(self.model_path)
         ext = "cuda" if self.cuda() else "cpu"
-        torch.save(state, '{1}/imitator_{0}_{2}.pth'.format(step + 1, self.model_path, ext))
+        torch.save(state, '{1}/cycleim_{0}_{2}.pth'.format(step + 1, self.model_path, ext))
 
     @staticmethod
     def capture(path, tensor1, tensor2, tensor3, parse, cuda):

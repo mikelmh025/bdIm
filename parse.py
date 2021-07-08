@@ -192,3 +192,9 @@ parser.add_argument(
     type=int,
     default='10',
     help='number of samples to be evaluated')
+parser.add_argument(
+    '--eval_cycleIm',
+    dest='eval_cycleIm',
+    type=int,
+    default='10',
+    help='number of samples to be evaluated')
